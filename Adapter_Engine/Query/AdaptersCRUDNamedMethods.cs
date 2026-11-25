@@ -1,0 +1,65 @@
+/*
+ * This file is part of the Buildings and Habitats object Model (BHoM)
+ * Copyright (c) 2015 - 2026, the respective contributors. All rights reserved.
+ *
+ * Each contributor holds copyright over their respective contributions.
+ * The project versioning (Git) records all such contribution source information.
+ *                                           
+ *                                                                              
+ * The BHoM is free software: you can redistribute it and/or modify         
+ * it under the terms of the GNU Lesser General Public License as published by  
+ * the Free Software Foundation, either version 3.0 of the License, or          
+ * (at your option) any later version.                                          
+ *                                                                              
+ * The BHoM is distributed in the hope that it will be useful,              
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the                 
+ * GNU Lesser General Public License for more details.                          
+ *                                                                            
+ * You should have received a copy of the GNU Lesser General Public License     
+ * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
+ */
+
+using BH.oM.Base;
+using BH.oM.Base.Attributes;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+
+
+namespace BH.Engine.Adapter
+{
+    public static partial class Query
+    {
+        /***************************************************/
+        /**** Public Methods                            ****/
+        /***************************************************/
+
+        [Description("Returns a collection with all CRUD-named methods found in all the Adapters loaded at runtime, grouped per CRUD type." +
+          "CRUD-named means whose name contains any of the CRUD keywords: `Create`, `Read`, `Update`, `Delete`.")]
+        [Output("Dictionary with string key, one of: `Create`, `Read`, `Update`, `Delete`; value is the List of CRUD methods.")]
+        public static Dictionary<string, List<MethodInfo>> AdaptersCRUDNamedMethods()
+        {
+            List<MethodInfo> adapterMethods = AdapterMethods();
+
+            // Select methods whose name includes any of keywords and group them based on that
+            List<string> createKeywords = new List<string>() { "Create", "CreateCollection", "CreateObject" };
+            List<string> readKeywords = new List<string>() { "Read" };
+            List<string> updateKeywords = new List<string>() { "Update" };
+            List<string> deleteKeywords = new List<string>() { "Delete" };
+
+            Dictionary<string, List<MethodInfo>> groupedCRUDmethods = new Dictionary<string, List<MethodInfo>>();
+
+            groupedCRUDmethods.Add("Create", adapterMethods.Where(x => createKeywords.Any(s => x.Name.Contains(s))).ToList());
+            groupedCRUDmethods.Add("Read", adapterMethods.Where(x => readKeywords.Any(s => x.Name.Contains(s))).ToList());
+            groupedCRUDmethods.Add("Update", adapterMethods.Where(x => updateKeywords.Any(s => x.Name.Contains(s))).ToList());
+            groupedCRUDmethods.Add("Delete", adapterMethods.Where(x => deleteKeywords.Any(s => x.Name.Contains(s))).ToList());
+
+            return groupedCRUDmethods;
+        }
+    }
+}
+
+
